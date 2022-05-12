@@ -18,3 +18,10 @@
   echo "Visit http://127.0.0.1:8080 to use your application"
   kubectl -n {{ .Release.Namespace }} port-forward deploy/{{ template "podinfo.fullname" . }} 8080:{{ .Values.service.externalPort }}
 {{- end }}
+{{- if and .Values.otel.enabled .Values.otel.deployJaeger }}
+
+To check the OpenTelemetry (tracing) data:
+------------------------------------------
+kubectl port-forward -n {{ .Release.Namespace }} svc/jaeger-collector 16686
+open http://localhost:16686
+{{- end }}

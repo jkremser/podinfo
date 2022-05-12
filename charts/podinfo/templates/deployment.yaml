@@ -87,6 +87,9 @@ spec:
             {{- if .Values.h2c.enabled }}
             - --h2c
             {{- end }}
+            {{- if .Values.otel.enabled }}
+            - --otel-service-name={{ default .Chart.Name .Values.otel.serviceName }}
+            {{- end }}
           env:
           {{- if .Values.ui.message }}
           - name: PODINFO_UI_MESSAGE
@@ -103,6 +106,10 @@ spec:
           {{- if .Values.backend }}
           - name: PODINFO_BACKEND_URL
             value: {{ .Values.backend }}
+          {{- end }}
+          {{- if .Values.otel.enabled }}
+          - name: OTEL_EXPORTER_OTLP_TRACES_ENDPOINT
+            value: {{ quote .Values.otel.endpoint }}
           {{- end }}
           ports:
             - name: http
@@ -157,6 +164,16 @@ spec:
           {{- end }}
           resources:
 {{ toYaml .Values.resources | indent 12 }}
+        {{- if .Values.otel.enabled }}
+        - image: {{ .Values.otel.sidecarImage.repository }}:{{ .Values.otel.sidecarImage.tag }}
+          name: otel-collector
+          imagePullPolicy: {{ .Values.otel.sidecarImage.pullPolicy }}
+          args:
+          - --config=/conf/agent.yaml
+          volumeMounts:
+          - mountPath: /conf
+            name: agent-config
+        {{- end }}
     {{- with .Values.nodeSelector }}
       nodeSelector:
 {{ toYaml . | indent 8 }}
@@ -176,4 +193,12 @@ spec:
       - name: tls
         secret:
           secretName: {{ template "podinfo.tlsSecretName" . }}
+      {{- end }}
+      {{- if .Values.otel.enabled }}
+      - name: agent-config
+        configMap:
+          items:
+          - key: agent.yaml
+            path: agent.yaml
+          name: agent-config
       {{- end }}

@@ -1,0 +1,34 @@
+{{- if .Values.otel.enabled }}
+{{- if .Values.otel.deployJaeger }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: jaeger
+spec:
+  selector:
+    matchLabels:
+      id: jaeger
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        id: jaeger
+    spec:
+      containers:
+        - name: jaeger
+          image: {{ .Values.otel.jaegerImage.repository }}:{{ .Values.otel.jaegerImage.tag }}
+          imagePullPolicy: {{ .Values.otel.jaegerImage.pullPolicy }}
+          readinessProbe:
+            httpGet:
+              path: "/"
+              port: 14269
+            initialDelaySeconds: 5
+          resources:
+            limits:
+              cpu: 500m
+              memory: 128Mi
+            requests:
+              cpu: 10m
+              memory: 64Mi
+{{- end }}
+{{- end }}

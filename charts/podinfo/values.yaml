@@ -115,6 +115,22 @@ ingress:
   #    hosts:
   #      - chart-example.local
 
+otel:
+  enabled: false
+  serviceName: "" # if not set the {{ .Chart.Name }} will be used
+  deployJaeger: false
+  endpoint: localhost:4317
+  sidecarImage:
+    repository: otel/opentelemetry-collector
+    tag: 0.48.0
+    pullPolicy: Always
+  
+  jaegerImage:
+    # -- if `otel.deployJaeger==true` this image will be used in the deployment for Jaeger
+    repository: jaegertracing/all-in-one
+    tag: 1.33.0
+    pullPolicy: Always
+
 linkerd:
   profile:
     enabled: false

@@ -1,0 +1,24 @@
+{{- if .Values.otel.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: agent-config
+data:
+  agent.yaml: |
+    receivers:
+      otlp:
+        protocols:
+          http:
+          grpc:
+    processors:
+    exporters:
+      jaeger:
+        endpoint: jaeger-collector.{{ .Release.Namespace }}:14250
+      logging:
+    service:
+      pipelines:
+        traces:
+          receivers: [otlp]
+          processors: []
+          exporters: [jaeger]
+{{- end }}
